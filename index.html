@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>SmileCare AI | Clinic Automation & Patient Acquisition System</title>
+    <!-- Google Fonts & Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- FullCalendar for appointment view -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Custom smooth transitions */
+        .transition-smooth {
+            transition: all 0.2s ease-in-out;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        /* Simulated chat bubble */
+        .chat-bubble-user {
+            background-color: #e2f0ff;
+            border-radius: 18px 18px 4px 18px;
+        }
+        .chat-bubble-ai {
+            background-color: #f1f5f9;
+            border-radius: 18px 18px 18px 4px;
+        }
+        .status-badge {
+            @apply px-2 py-1 text-xs rounded-full font-semibold;
+        }
+        /* scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans antialiased">
+
+    <!-- Main App Container -->
+    <div id="app" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-tooth text-teal-600"></i> SmileCare AI
+                </h1>
+                <p class="text-gray-500 text-sm">AI-powered patient acquisition & clinic automation • Austin, TX</p>
+            </div>
+            <div class="flex gap-3">
+                <div class="bg-white rounded-lg px-4 py-2 shadow-sm text-sm">
+                    <i class="fas fa-robot text-purple-500 mr-1"></i> AI Receptionist: <span class="font-semibold text-green-600">ACTIVE</span>
+                </div>
+                <div class="bg-white rounded-lg px-4 py-2 shadow-sm text-sm">
+                    <i class="fas fa-chart-line text-blue-500"></i> Multi-clinic ready
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Tabs Navigation -->
+        <div class="border-b border-gray-200 mb-6">
+            <nav class="flex flex-wrap gap-2 md:gap-6">
+                <button @click="activeTab = 'pipeline'" :class="{'border-teal-500 text-teal-600': activeTab === 'pipeline', 'border-transparent text-gray-500 hover:text-gray-700': activeTab !== 'pipeline'}" class="py-2 px-1 border-b-2 font-medium text-sm transition-smooth">
+                    <i class="fas fa-funnel-dollar mr-1"></i> Pipeline & Leads
+                </button>
+                <button @click="activeTab = 'calendar'" :class="{'border-teal-500 text-teal-600': activeTab === 'calendar', 'border-transparent text-gray-500 hover:text-gray-700': activeTab !== 'calendar'}" class="py-2 px-1 border-b-2 font-medium text-sm transition-smooth">
+                    <i class="fas fa-calendar-alt mr-1"></i> Appointments
+                </button>
+                <button @click="activeTab = 'campaigns'" :class="{'border-teal-500 text-teal-600': activeTab === 'campaigns', 'border-transparent text-gray-500 hover:text-gray-700': activeTab !== 'campaigns'}" class="py-2 px-1 border-b-2 font-medium text-sm transition-smooth">
+                    <i class="fas fa-chart-simple mr-1"></i> Campaign ROI
+                </button>
+                <button @click="activeTab = 'ai-reception'" :class="{'border-teal-500 text-teal-600': activeTab === 'ai-reception', 'border-transparent text-gray-500 hover:text-gray-700': activeTab !== 'ai-reception'}" class="py-2 px-1 border-b-2 font-medium text-sm transition-smooth">
+                    <i class="fas fa-headset mr-1"></i> AI Receptionist Demo
+                </button>
+                <button @click="activeTab = 'retention'" :class="{'border-teal-500 text-teal-600': activeTab === 'retention', 'border-transparent text-gray-500 hover:text-gray-700': activeTab !== 'retention'}" class="py-2 px-1 border-b-2 font-medium text-sm transition-smooth">
+                    <i class="fas fa-heartbeat mr-1"></i> Retention
+                </button>
+            </nav>
+        </div>
+
+        <!-- KPI Cards (Global Metrics) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-teal-500 card-hover">
+                <div class="text-sm text-gray-500">Total Leads (30d)</div>
+                <div class="text-2xl font-bold text-gray-800">47</div>
+                <div class="text-xs text-green-600 mt-1"><i class="fas fa-arrow-up"></i> +12% vs last month</div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-blue-500 card-hover">
+                <div class="text-sm text-gray-500">Conversion Rate</div>
+                <div class="text-2xl font-bold text-gray-800">34%</div>
+                <div class="text-xs text-blue-600">Target 35% · +5% from AI</div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-purple-500 card-hover">
+                <div class="text-sm text-gray-500">Appointments Booked</div>
+                <div class="text-2xl font-bold text-gray-800">16</div>
+                <div class="text-xs text-green-600">Next 30 days</div>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-amber-500 card-hover">
+                <div class="text-sm text-gray-500">Projected Revenue</div>
+                <div class="text-2xl font-bold text-gray-800">$8,940</div>
+                <div class="text-xs text-green-600">+23% growth</div>
+            </div>
+        </div>
+
+        <!-- DYNAMIC CONTENT BASED ON TAB -->
+        <div>
+            <!-- Pipeline & Leads Tab -->
+            <div x-show="activeTab === 'pipeline'" x-cloak>
+                <div class="grid lg:grid-cols-3 gap-6">
+                    <!-- Lead Funnel Chart -->
+                    <div class="lg:col-span-2 bg-white rounded-xl shadow p-5">
+                        <h3 class="font-semibold text-gray-700 mb-3"><i class="fas fa-chart-pie"></i> Pipeline stages</h3>
+                        <canvas id="pipelineChart" width="400" height="200" style="max-height: 240px;"></canvas>
+                        <div class="mt-4 text-sm text-gray-500">AI qualification boosts booking rates by 34%</div>
+                    </div>
+                    <!-- Lead List -->
+                    <div class="bg-white rounded-xl shadow p-5">
+                        <h3 class="font-semibold text-gray-700 mb-3 flex justify-between"><span><i class="fas fa-users"></i> Recent Leads</span> <span class="text-xs text-teal-600">AI-sorted</span></h3>
+                        <div class="space-y-3 max-h-96 overflow-y-auto">
+                            <div v-for="lead in leads" :key="lead.id" class="border-b pb-2 last:border-0">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <div class="font-medium">{{ lead.name }}</div>
+                                        <div class="text-xs text-gray-500">{{ lead.service }} • {{ lead.source }}</div>
+                                    </div>
+                                    <span :class="{'bg-green-100 text-green-700': lead.status === 'booked', 'bg-yellow-100 text-yellow-700': lead.status === 'follow-up', 'bg-blue-100 text-blue-700': lead.status === 'qualified'}" class="px-2 py-0.5 text-xs rounded-full font-medium">{{ lead.status }}</span>
+                                </div>
+                                <div class="flex justify-between items-center mt-1 text-xs">
+                                    <span class="text-gray-400">{{ lead.timeAgo }}</span>
+                                    <button @click="simulateFollowUp(lead)" class="text-teal-600 hover:text-teal-800"><i class="fas fa-comment-dots"></i> Follow-up</button>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="mt-4 w-full text-center text-sm bg-gray-100 py-2 rounded-lg text-gray-600 hover:bg-gray-200" @click="addDummyLead">+ Simulate New Inbound Lead</button>
+                    </div>
+                </div>
+                <!-- Automated sequence info -->
+                <div class="mt-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 flex flex-wrap justify-between items-center">
+                    <div><i class="fas fa-robot text-indigo-600"></i> <span class="font-medium">AI follow-up sequence active:</span> Unbooked leads receive SMS after 24h</div>
+                    <div class="text-sm text-gray-600">📱 Last automation: 2 follow-ups sent today</div>
+                </div>
+            </div>
+
+            <!-- Calendar Tab -->
+            <div x-show="activeTab === 'calendar'" x-cloak>
+                <div class="bg-white rounded-xl shadow p-5">
+                    <h3 class="font-semibold text-gray-700 mb-3">Appointment Calendar (Next appointments)</h3>
+                    <div id="calendar" class="h-96"></div>
+                    <div class="mt-4 text-sm text-gray-500 flex gap-4 flex-wrap">
+                        <span><i class="fas fa-clock text-green-600"></i> Reminders: SMS sent 24h before</span>
+                        <span><i class="fas fa-exchange-alt text-blue-500"></i> Reschedule option enabled</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Campaign ROI Tab -->
+            <div x-show="activeTab === 'campaigns'" x-cloak>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-xl shadow p-5">
+                        <h3 class="font-semibold text-gray-700 mb-2">Campaign performance</h3>
+                        <canvas id="roiChart" height="200"></canvas>
+                        <div class="mt-3 text-center text-sm">Follow-up sequence: 68% booking rate within 48h</div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow p-5">
+                        <h3 class="font-semibold text-gray-700 mb-2">Lead source attribution</h3>
+                        <canvas id="sourceChart" height="200"></canvas>
+                        <div class="mt-3 text-xs text-gray-500">AI voice + SMS capture 41% of inbound</div>
+                    </div>
+                    <div class="md:col-span-2 bg-white rounded-xl shadow p-5">
+                        <h3 class="font-semibold text-gray-700 mb-3"><i class="fas fa-dollar-sign"></i> ROI Metrics</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div><span class="text-gray-500">Cost per lead</span><div class="font-bold text-lg">$4.20</div></div>
+                            <div><span class="text-gray-500">Cost per booking</span><div class="font-bold text-lg">$12.30</div></div>
+                            <div><span class="text-gray-500">AI saved hours</span><div class="font-bold text-lg">38 hrs/mo</div></div>
+                            <div><span class="text-gray-500">Reactivation ROI</span><div class="font-bold text-green-600">+215%</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Receptionist Demo Tab (SIMULATED TWILIO + OPENAI LOGIC) -->
+            <div x-show="activeTab === 'ai-reception'" x-cloak>
+                <div class="grid lg:grid-cols-2 gap-6">
+                    <!-- Chat Simulator -->
+                    <div class="bg-white rounded-xl shadow overflow-hidden flex flex-col h-[500px]">
+                        <div class="bg-teal-700 text-white px-5 py-3 flex items-center gap-2">
+                            <i class="fas fa-microphone-alt"></i> <span class="font-medium">AI Voice & SMS Receptionist (Live Demo)</span>
+                            <span class="ml-auto text-xs bg-teal-500 px-2 py-0.5 rounded-full">OpenAI GPT-4 logic</span>
+                        </div>
+                        <div class="flex-1 overflow-y-auto p-4 space-y-3" id="chatMessages" style="background: #fafcff;">
+                            <div v-for="msg in chatHistory" :key="msg.id" :class="msg.sender === 'user' ? 'flex justify-end' : 'flex justify-start'">
+                                <div :class="msg.sender === 'user' ? 'chat-bubble-user max-w-[80%] bg-blue-50 text-gray-800 p-3 rounded-xl' : 'chat-bubble-ai max-w-[80%] bg-gray-100 p-3 rounded-xl'">
+                                    <div class="text-xs text-gray-500 mb-1">{{ msg.sender === 'user' ? 'You' : 'SmileCare AI' }}</div>
+                                    <div>{{ msg.text }}</div>
+                                </div>
+                            </div>
+                            <div v-if="isAITyping" class="flex justify-start"><div class="bg-gray-200 rounded-full px-4 py-2 text-sm text-gray-500"><i class="fas fa-circle-notch fa-spin"></i> AI is thinking...</div></div>
+                        </div>
+                        <div class="p-4 border-t bg-white flex gap-2">
+                            <input type="text" v-model="userMessage" @keyup.enter="sendChatMessage" placeholder="Ask about services, pricing, or book..." class="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-400">
+                            <button @click="sendChatMessage" class="bg-teal-600 text-white px-5 rounded-lg hover:bg-teal-700"><i class="fas fa-paper-plane"></i> Send</button>
+                        </div>
+                        <div class="bg-gray-50 px-4 py-2 text-xs text-gray-500 flex gap-4 border-t">
+                            <span><i class="fas fa-phone"></i> Call: +1 (512) 555-0234</span>
+                            <span><i class="fas fa-sms"></i> SMS: instant reply</span>
+                            <span><i class="fas fa-shield-alt"></i> HIPAA-aware</span>
+                        </div>
+                    </div>
+                    <!-- Clinic Knowledge Base & Rules -->
+                    <div class="space-y-5">
+                        <div class="bg-white rounded-xl shadow p-5">
+                            <h3 class="font-semibold flex items-center gap-2"><i class="fas fa-database"></i> Clinic config (multi-clinic ready)</h3>
+                            <div class="mt-2 text-sm space-y-1">
+                                <p><span class="font-medium">📍 Clinic:</span> SmileCare Dental & Aesthetics, Austin TX</p>
+                                <p><span class="font-medium">⏰ Hours:</span> Mon-Sat 9am-6pm</p>
+                                <p><span class="font-medium">💲 Services:</span> Teeth Whitening ($120), Botox ($300), Dental Implants ($1200)</p>
+                                <p><span class="font-medium">🤖 AI Guardrails:</span> no pricing hallucination, location-aware, urgency detection</p>
+                            </div>
+                            <div class="mt-4 bg-blue-50 p-2 rounded text-xs">✨ Example: "I need Botox urgently" → AI offers next-day slot + booking link</div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow p-5">
+                            <h3 class="font-semibold"><i class="fas fa-clock"></i> Automation logs</h3>
+                            <div class="mt-2 text-xs space-y-2 max-h-48 overflow-y-auto">
+                                <div v-for="log in automationLogs" :key="log.id" class="border-b pb-1 flex gap-2"><span class="text-gray-400">{{ log.time }}</span><span>{{ log.action }}</span></div>
+                            </div>
+                        </div>
+                        <button class="w-full bg-indigo-50 border border-indigo-200 rounded-lg p-3 text-indigo-700 hover:bg-indigo-100 transition" @click="simulateInboundCall">📞 Simulate Inbound Call (Voice AI)</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Retention Tab -->
+            <div x-show="activeTab === 'retention'" x-cloak>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-xl shadow p-5">
+                        <h3 class="font-semibold"><i class="fas fa-user-check"></i> Reactivation campaigns</h3>
+                        <canvas id="retentionChart" height="180"></canvas>
+                        <div class="mt-2 text-sm">30d: 20% off | 60d: 25% off + consult | 90d: 30% off + whitening kit</div>
+                        <button class="mt-3 text-sm bg-amber-100 px-3 py-1 rounded-full text-amber-800" @click="triggerReactivation">Trigger Reactivation Demo (SMS)</button>
+                    </div>
+                    <div class="bg-white rounded-xl shadow p-5">
+                        <h3 class="font-semibold"><i class="fas fa-file-signature"></i> Digital intake & consent</h3>
+                        <p class="text-sm text-gray-600 mt-1">HIPAA-ready forms via JotForm/Typeform simulation</p>
+                        <div class="mt-3 p-3 bg-gray-50 rounded-md">
+                            <div class="font-medium">New patient intake form</div>
+                            <div class="text-xs text-gray-500">Medical history, consent, photo release</div>
+                            <button class="mt-2 bg-teal-600 text-white text-xs px-3 py-1 rounded" @click="simulateFormSend">Send consent link (demo)</button>
+                        </div>
+                        <div class="mt-4 p-3 border rounded">
+                            <div class="flex justify-between"><span>📅 Appointment reminders</span><span class="text-green-600"><i class="fas fa-check-circle"></i> Active</span></div>
+                            <div class="text-xs">Today's reminders sent: 3 patients confirmed</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="mt-10 text-center text-xs text-gray-400 border-t pt-6">AI-powered clinic automation system • HIPAA-aware structure • GoHighLevel compatible • Make.com / n8n ready</div>
+    </div>
+
+    <!-- Vue CDN + Alpine-like (Vue 3) -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+        const { createApp, ref, onMounted, nextTick } = Vue;
+
+        createApp({
+            setup() {
+                // Reactive state
+                const activeTab = ref('pipeline');
+                const leads = ref([
+                    { id: 1, name: "John Doe", service: "Teeth Whitening", source: "Website form", status: "booked", timeAgo: "2 hours ago" },
+                    { id: 2, name: "Sarah Smith", service: "Botox", source: "SMS", status: "follow-up", timeAgo: "1 day ago" },
+                    { id: 3, name: "Mike Johnson", service: "Dental Implants", source: "Missed call", status: "qualified", timeAgo: "3 hours ago" },
+                    { id: 4, name: "Emma Watson", service: "Teeth Whitening", source: "Voice AI", status: "booked", timeAgo: "Yesterday" },
+                    { id: 5, name: "Lisa Ray", service: "Botox", source: "Web chat", status: "follow-up", timeAgo: "5 hours ago" }
+                ]);
+                const chatHistory = ref([
+                    { id: 1, sender: "ai", text: "Hello! I'm SmileCare AI receptionist. How can I help you today? We offer Teeth Whitening ($120), Botox ($300), and Dental Implants ($1200)." }
+                ]);
+                const userMessage = ref("");
+                const isAITyping = ref(false);
+                const automationLogs = ref([
+                    { id: 1, time: "09:32 AM", action: "AI SMS: Follow-up sent to Sarah Smith (Botox inquiry)" },
+                    { id: 2, time: "08:15 AM", action: "Appointment reminder sent to John Doe for tomorrow" },
+                    { id: 3, time: "Yesterday", action: "Missed call routed → lead qualified → booking link sent" }
+                ]);
+
+                // chart instances
+                let pipelineChart, roiChart, sourceChart, retentionChart;
+                let calendarObj = null;
+
+                // Helper: AI response simulation (OpenAI-like logic)
+                async function getAIResponse(userMsg) {
+                    const lowerMsg = userMsg.toLowerCase();
+                    if (lowerMsg.includes("whitening")) return "Teeth Whitening is $120 and takes 45 min. We have slots tomorrow at 10am or 2pm. Would you like me to book?";
+                    if (lowerMsg.includes("botox")) return "Botox treatment starts at $300. Our nurse injector has availability Wednesday at 11am. Reply BOOK to secure a spot.";
+                    if (lowerMsg.includes("implant") || lowerMsg.includes("implants")) return "Dental Implants are $1200 (payment plans available). Dr. Smith can see you for a consult on Friday. Book now?";
+                    if (lowerMsg.includes("price") || lowerMsg.includes("cost")) return "Our services: Whitening $120, Botox $300, Implants $1200. Which interests you?";
+                    if (lowerMsg.includes("book") || lowerMsg.includes("appointment")) return "Great! Please share your preferred service and date (Mon-Sat, 9am-6pm). I'll check availability instantly.";
+                    if (lowerMsg.includes("urgent") || lowerMsg.includes("emergency")) return "I understand urgency! Our earliest slot is tomorrow at 9am. I can book it now – just confirm your service.";
+                    if (lowerMsg.includes("location")) return "We're located in Austin, Texas at 123 Wellness Blvd. Open Mon-Sat 9am-6pm.";
+                    return "Thanks for reaching out! Would you like to book Teeth Whitening, Botox, or Dental Implants? Or I can send you pricing and availability.";
+                }
+
+                async function sendChatMessage() {
+                    if (!userMessage.value.trim()) return;
+                    const userText = userMessage.value;
+                    chatHistory.value.push({ id: Date.now(), sender: "user", text: userText });
+                    userMessage.value = "";
+                    isAITyping.value = true;
+                    // scroll to bottom
+                    await nextTick();
+                    const container = document.getElementById("chatMessages");
+                    if(container) container.scrollTop = container.scrollHeight;
+                    
+                    // simulate AI delay
+                    setTimeout(async () => {
+                        const aiReply = await getAIResponse(userText);
+                        chatHistory.value.push({ id: Date.now(), sender: "ai", text: aiReply });
+                        isAITyping.value = false;
+                        // Add automation log for lead interaction
+                        automationLogs.value.unshift({ id: Date.now(), time: new Date().toLocaleTimeString(), action: `AI conversation: "${userText.substring(0,40)}..." → qualified intent.` });
+                        if(automationLogs.value.length > 6) automationLogs.value.pop();
+                        await nextTick();
+                        if(container) container.scrollTop = container.scrollHeight;
+                        // simulate booking if keywords
+                        if(userText.toLowerCase().includes("book") || userText.toLowerCase().includes("yes")) {
+                            setTimeout(() => {
+                                chatHistory.value.push({ id: Date.now(), sender: "ai", text: "✅ Appointment link sent via SMS! (demo) You can also check calendar in dashboard." });
+                            }, 800);
+                        }
+                    }, 800);
+                }
+
+                function simulateInboundCall() {
+                    const demoCallQuery = "Hi, I need Botox for next week, what's the price?";
+                    userMessage.value = demoCallQuery;
+                    sendChatMessage();
+                    automationLogs.value.unshift({ id: Date.now(), time: new Date().toLocaleTimeString(), action: "📞 Inbound call (voice) → AI transcription & qualification triggered." });
+                }
+
+                function simulateFollowUp(lead) {
+                    automationLogs.value.unshift({ id: Date.now(), time: new Date().toLocaleTimeString(), action: `📱 Follow-up SMS sent to ${lead.name} (${lead.service}) via Twilio automation` });
+                    alert(`[Demo] Follow-up SMS sent to ${lead.name}: "We noticed you haven't booked yet. Reply with your preferred time to get 10% off!"`);
+                    if(lead.status === 'follow-up') lead.status = 'qualified';
+                }
+
+                function addDummyLead() {
+                    const newLead = { id: Date.now(), name: "New Prospect", service: "Teeth Whitening", source: "AI Voice", status: "qualified", timeAgo: "Just now" };
+                    leads.value.unshift(newLead);
+                    automationLogs.value.unshift({ id: Date.now(), time: new Date().toLocaleTimeString(), action: "🆕 New inbound lead via AI SMS → added to pipeline" });
+                }
+
+                function triggerReactivation() {
+                    automationLogs.value.unshift({ id: Date.now(), time: new Date().toLocaleTimeString(), action: "💌 Reactivation campaign (60-day inactive): SMS sent with 25% off offer." });
+                    alert("Demo: Reactivation SMS sent to 3 inactive patients with 25% discount + free consult.");
+                }
+
+                function simulateFormSend() {
+                    automationLogs.value.unshift({ id: Date.now(), time: new Date().toLocaleTimeString(), action: "📋 Digital intake form sent to patient email/SMS (JotForm simulation)" });
+                    alert("Consent & intake form link sent to demo patient (HIPAA-ready).");
+                }
+
+                // Charts init
+                function initCharts() {
+                    const ctxPipe = document.getElementById('pipelineChart')?.getContext('2d');
+                    if(ctxPipe && !pipelineChart) pipelineChart = new Chart(ctxPipe, { type: 'bar', data: { labels: ['New', 'Contacted', 'Qualified', 'Booked', 'Lost'], datasets: [{ label: 'Leads', data: [12, 18, 9, 16, 5], backgroundColor: '#2dd4bf' }] } });
+                    const ctxRoi = document.getElementById('roiChart')?.getContext('2d');
+                    if(ctxRoi && !roiChart) roiChart = new Chart(ctxRoi, { type: 'line', data: { labels: ['24h follow-up', '48h follow-up', '7d re-engage'], datasets: [{ label: 'Booking Rate %', data: [68, 42, 23], borderColor: '#f59e0b', tension: 0.3 }] } });
+                    const ctxSource = document.getElementById('sourceChart')?.getContext('2d');
+                    if(ctxSource && !sourceChart) sourceChart = new Chart(ctxSource, { type: 'pie', data: { labels: ['Website Form', 'SMS', 'Voice Call', 'Missed Call'], datasets: [{ data: [28, 22, 31, 19], backgroundColor: ['#3b82f6','#10b981','#8b5cf6','#f97316'] }] } });
+                    const ctxRet = document.getElementById('retentionChart')?.getContext('2d');
+                    if(ctxRet && !retentionChart) retentionChart = new Chart(ctxRet, { type: 'bar', data: { labels: ['30d inactive', '60d inactive', '90d inactive'], datasets: [{ label: 'Reactivated %', data: [42, 28, 19], backgroundColor: '#facc15' }] } });
+                }
+
+                // Calendar
+                function initCalendar() {
+                    const calendarEl = document.getElementById('calendar');
+                    if(calendarEl && !calendarObj) {
+                        calendarObj = new FullCalendar.Calendar(calendarEl, {
+                            initialView: 'dayGridMonth',
+                            events: [
+                                { title: 'Whitening - John Doe', start: '2026-04-25T10:00:00', color: '#0d9488' },
+                                { title: 'Botox - Sarah Smith', start: '2026-04-27T14:30:00', color: '#3b82f6' },
+                                { title: 'Implants Consult - Mike Johnson', start: '2026-04-29T11:00:00', color: '#a855f7' },
+                                { title: 'Whitening - Emma Watson', start: '2026-05-02T09:30:00' }
+                            ],
+                            height: 380,
+                            headerToolbar: { left: 'prev,next', center: 'title', right: 'dayGridMonth' }
+                        });
+                        calendarObj.render();
+                    }
+                }
+
+                onMounted(() => {
+                    initCharts();
+                    initCalendar();
+                    // watch tab changes to re-render charts if needed
+                });
+
+                // watch activeTab to reinit charts (if tab changes after dom)
+                const unwatch = () => {};
+                return { activeTab, leads, chatHistory, userMessage, isAITyping, automationLogs, sendChatMessage, simulateInboundCall, simulateFollowUp, addDummyLead, triggerReactivation, simulateFormSend, initCharts, initCalendar };
+            }
+        }).mount('#app');
+    </script>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+</body>
+</html>
